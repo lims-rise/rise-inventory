@@ -19,20 +19,29 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 /**
  * CRUD master data, pengganti controller hasil Harviacode CRUD Generator di CI3.
  * Perilaku dipertahankan:
- *  - Hanya baris status = 1 yang tampil; "hapus" = mengubah status menjadi 0 (soft delete).
- *  - Insert mengisi created_at & created_by; update juga memperbarui created_at & created_by
- *    (sama seperti CI3, kolom ini dipakai sebagai "terakhir diubah").
+ *  - Hanya baris status = 1 yang tampil; "hapus" = status menjadi 0 (soft delete).
+ *  - Insert mengisi status, created_at & created_by (bila tabelnya punya kolom itu: MasterResource::$audit).
+ *  - Update mengisi ulang created_at & created_by HANYA bila modul CI3-nya begitu
+ *    (MasterResource::$touchOnUpdate; Category/Sub Category/Manufacture ya, Department/Condition tidak).
  *  - URL sama: /prefix, /prefix/read/{id}, /prefix/create, /prefix/update/{id}, /prefix/excel.
  */
 abstract class MasterController extends Controller
 {
     abstract protected function resource(): MasterResource;
 
-    /** Baris aktif (status = 1). */
+    protected function model(): Model
+    {
+        return new ($this->resource()->model);
+    }
+
+    /** Baris aktif (status = 1). Kolom ditulis lengkap (tabel.kolom) supaya aman saat ada join. */
     protected function query(): Builder
     {
         $resource = $this->resource();
-        $query = ($resource->model)::query()->where('status', 1);
+        $model = $this->model();
+        $query = $model->newQuery()
+            ->select($model->qualifyColumn('*'))
+            ->where($model->qualifyColumn('status'), 1);
 
         if ($resource->scope) {
             ($resource->scope)($query);
@@ -59,13 +68,23 @@ abstract class MasterController extends Controller
     public function json(Request $request): JsonResponse
     {
         $resource = $this->resource();
+        $model = $this->model();
         $listFields = $resource->listFields();
-        $textFields = array_keys(array_filter($listFields, fn ($f) => $f['type'] !== 'select'));
+
+        $searchable = [];
+        $orderable = ['id' => $model->getQualifiedKeyName()];
+        foreach ($listFields as $key => $field) {
+            $column = $field['type'] === 'select' ? null : $model->qualifyColumn($key);
+            if ($search = $field['search'] ?? $column) {
+                $searchable[] = $search;
+            }
+            $orderable[$key] = $field['sort'] ?? $model->qualifyColumn($key);
+        }
 
         return DataTables::make($request, $this->query())
-            ->searchable($textFields)
-            ->orderable(array_combine(array_keys($listFields), array_keys($listFields)) + ['id' => 'id'])
-            ->defaultOrder((new $resource->model)->getKeyName(), 'desc')
+            ->searchable($searchable)
+            ->orderable($orderable)
+            ->defaultOrder($model->getQualifiedKeyName(), 'desc')
             ->map(function (Model $row) use ($resource, $listFields) {
                 $data = ['id' => $row->getKey()];
                 foreach (array_keys($listFields) as $key) {
@@ -74,7 +93,7 @@ abstract class MasterController extends Controller
                 $data['urls'] = [
                     'read' => $resource->route('read', $row->getKey()),
                     'edit' => $resource->route('edit', $row->getKey()),
-                    'delete' => $resource->route('destroy', $row->getKey()),
+                    'delete' => $resource->lockReason($row->getKey()) ? null : $resource->route('destroy', $row->getKey()),
                 ];
 
                 return $data;
@@ -92,7 +111,9 @@ abstract class MasterController extends Controller
         return view('master.show', [
             'resource' => $this->resource(),
             'row' => $row,
-            'createdBy' => $row->created_by ? User::whereKey($row->created_by)->value('full_name') : null,
+            'createdBy' => $this->resource()->audit && $row->created_by
+                ? User::whereKey($row->created_by)->value('full_name')
+                : null,
         ]);
     }
 
@@ -111,12 +132,13 @@ abstract class MasterController extends Controller
         $resource = $this->resource();
         $data = $request->validate($resource->rules(), [], $resource->labels());
 
-        $row = new $resource->model;
-        $row->forceFill($data + [
-            'status' => 1,
-            'created_at' => now(),
-            'created_by' => Auth::id(),
-        ])->save();
+        $data['status'] = 1;
+        if ($resource->audit) {
+            $data += ['created_at' => now(), 'created_by' => Auth::id()];
+        }
+
+        $row = $this->model();
+        $row->forceFill($data)->save();
 
         return redirect($resource->route('index'))
             ->with('success', $resource->title.' "'.($data['name'] ?? $row->getKey()).'" has been created.');
@@ -148,10 +170,11 @@ abstract class MasterController extends Controller
 
         $data = $request->validate($resource->rules(), [], $resource->labels());
 
-        $row->forceFill($data + [
-            'created_at' => now(),       // perilaku CI3: dipakai sebagai "terakhir diubah"
-            'created_by' => Auth::id(),
-        ])->save();
+        if ($resource->audit && $resource->touchOnUpdate) {
+            $data += ['created_at' => now(), 'created_by' => Auth::id()];
+        }
+
+        $row->forceFill($data)->save();
 
         return redirect($resource->route('index'))
             ->with('success', $resource->title.' "'.($data['name'] ?? $row->getKey()).'" has been updated.');
@@ -166,6 +189,11 @@ abstract class MasterController extends Controller
             return $row;
         }
 
+        if ($reason = $resource->deleteBlockedReason($row)) {
+            return redirect($resource->route('index'))
+                ->with('error', $resource->title.' "'.$row->name.'" cannot be deleted: '.$reason);
+        }
+
         $row->forceFill(['status' => 0])->save();
 
         return redirect($resource->route('index'))
@@ -176,11 +204,10 @@ abstract class MasterController extends Controller
     {
         $resource = $this->resource();
         $listFields = $resource->listFields();
-        $keyName = (new $resource->model)->getKeyName();
 
         $rows = [];
         $no = 1;
-        foreach ($this->query()->orderByDesc($keyName)->cursor() as $row) {
+        foreach ($this->query()->orderByDesc($this->model()->getQualifiedKeyName())->cursor() as $row) {
             $line = [$no++];
             foreach (array_keys($listFields) as $key) {
                 $line[] = $resource->display($row, $key);
@@ -190,7 +217,7 @@ abstract class MasterController extends Controller
 
         return SimpleXlsx::make(
             $resource->title,
-            array_merge(['No'], array_column($listFields, 'label')),
+            array_merge(['No'], array_column($listFields, 'list_label')),
             $rows,
         )->download($resource->prefix.'_'.now()->format('Ymd_His').'.xlsx');
     }

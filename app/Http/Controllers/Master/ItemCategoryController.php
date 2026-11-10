@@ -15,9 +15,11 @@ class ItemCategoryController extends MasterController
             prefix: 'item_category',
             title: 'Category',
             icon: 'bi-grid-3x3-gap',
+            touchOnUpdate: true, // CI3: update_action mengisi created_at & created_by
             fields: [
                 'name' => [
-                    'label' => 'Name',
+                    'label' => 'Category Name',
+                    'list_label' => 'Name',
                     'rules' => ['required', 'string', 'max:100'],
                     'placeholder' => 'e.g. IT Equipment',
                 ],

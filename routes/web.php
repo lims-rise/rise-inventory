@@ -43,8 +43,20 @@ Route::middleware('auth')->group(function () {
 
     // ---- Master data (URL sama dengan CI3, hak akses dari tbl_hak_akses) ----
     Route::legacyMaster('item_category', Master\ItemCategoryController::class);
-    // Berikutnya, contoh:
-    // Route::legacyMaster('department', Master\DepartmentController::class);
+    Route::legacyMaster('item_sub_category', Master\ItemSubCategoryController::class);
+    Route::legacyMaster('department', Master\DepartmentController::class);
+    Route::legacyMaster('item_condition', Master\ItemConditionController::class);
+    Route::legacyMaster('item_manufacture', Master\ItemManufactureController::class);
+    Route::legacyMaster('item_supplier', Master\ItemSupplierController::class);
+    Route::legacyMaster('location', Master\LocationController::class);
+    Route::legacyMaster('location_detail', Master\LocationDetailController::class);
+
+    // Dropdown bertingkat (dipakai form aset): Category -> Sub Category, Location -> Location Detail.
+    // Cukup login (tanpa cek menu) karena hanya membaca daftar nama.
+    Route::post('item_sub_category/list', [Master\ItemSubCategoryController::class, 'options'])
+        ->name('item_sub_category.options');
+    Route::post('location_detail/list', [Master\LocationDetailController::class, 'options'])
+        ->name('location_detail.options');
 
     // Sementara: semua URL dari tbl_menu yang belum dimigrasi tetap bisa diklik
     // (dengan cek hak akses), menampilkan halaman "sedang dimigrasi".

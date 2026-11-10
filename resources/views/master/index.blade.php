@@ -21,7 +21,7 @@
             <tr>
                 <th style="width:70px">No</th>
                 @foreach ($listFields as $field)
-                    <th>{{ $field['label'] }}</th>
+                    <th>{{ $field['list_label'] }}</th>
                 @endforeach
                 <th class="text-right" style="width:170px">Action</th>
             </tr>
@@ -63,8 +63,10 @@ $(function () {
             return '<div class="rp-actions">' +
                 '<a href="' + urls.read + '" class="rp-act" title="View"><i class="bi bi-eye"></i></a>' +
                 '<a href="' + urls.edit + '" class="rp-act rp-act-edit" title="Edit"><i class="bi bi-pencil-square"></i></a>' +
-                '<button type="button" class="rp-act rp-act-del" title="Delete" data-url="' + urls.delete + '" data-name="' +
-                    $('<div>').text(label).html().replace(/"/g, '&quot;') + '"><i class="bi bi-trash3"></i></button>' +
+                (urls.delete
+                    ? '<button type="button" class="rp-act rp-act-del" title="Delete" data-url="' + urls.delete + '" data-name="' +
+                        $('<div>').text(label).html().replace(/"/g, '&quot;') + '"><i class="bi bi-trash3"></i></button>'
+                    : '<span class="rp-act rp-act-locked" title="Protected: cannot be deleted"><i class="bi bi-lock"></i></span>') +
             '</div>';
         }
     });

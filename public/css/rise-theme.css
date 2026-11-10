@@ -318,3 +318,15 @@ body.skin-rise { color: var(--rise-ink); background: var(--rise-navy); }
     .skin-rise .rp-detail dd { padding-top: 0; border-top: 0; }
     .skin-rise .dataTables_wrapper .dataTables_filter input { width: 100%; }
 }
+
+/* Tombol terkunci & select2 di form master */
+.skin-rise .rp-act-locked { color: #b8c4d6; cursor: not-allowed; }
+.skin-rise .rp-act-locked:hover { background: #fff; border-color: #e3e9f2; color: #b8c4d6; transform: none; }
+.skin-rise .rp-form .select2-container--default .select2-selection--single { height: 50px; border-radius: 12px; border-color: #d6dfeb; }
+.skin-rise .rp-form .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 48px; padding-left: 16px; font-size: 16px; }
+.skin-rise .rp-form .select2-container--default .select2-selection--single .select2-selection__arrow { height: 48px; right: 8px; }
+.skin-rise .rp-form .has-error .select2-selection--single { border-color: #e5484d; }
+.select2-container--default .select2-results__option--highlighted[aria-selected] { background: var(--rise-blue, #1f6feb); }
+.select2-dropdown { border-color: #d6dfeb; border-radius: 12px; overflow: hidden; box-shadow: 0 14px 30px rgba(11, 30, 58, .15); }
+.skin-rise .rp-help { margin: 8px 0 0; font-size: 12.5px; color: var(--rise-muted); }
+.skin-rise .rp-form textarea.form-control { border-radius: 12px; font-size: 16px; padding: 12px 16px; }

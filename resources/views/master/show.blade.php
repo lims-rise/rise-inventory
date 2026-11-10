@@ -13,15 +13,18 @@
     <div class="col-lg-7 col-md-9">
         <div class="rp-card">
             <dl class="rp-detail">
-                @foreach ($resource->fields as $key => $field)
+                @foreach ($resource->formFields() as $key => $field)
                     <dt>{{ $field['label'] }}</dt>
                     <dd>{{ $resource->display($row, $key) ?: '-' }}</dd>
                 @endforeach
-                <dt>Last updated</dt>
+                @if ($resource->audit)
+                {{-- Modul yang mengisi ulang created_at saat update: berarti "terakhir diubah" --}}
+                <dt>{{ $resource->touchOnUpdate ? 'Last updated' : 'Created' }}</dt>
                 <dd>
                     {{ $row->created_at ? $row->created_at->format('d M Y, H:i') : '-' }}
                     @if ($createdBy) <span class="text-muted">by {{ $createdBy }}</span> @endif
                 </dd>
+                @endif
             </dl>
 
             <div class="rp-form-actions">

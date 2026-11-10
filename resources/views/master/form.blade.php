@@ -17,9 +17,9 @@
                 <input type="hidden" name="id" value="{{ $row->getKey() }}">
             @endif
 
-            @foreach ($resource->fields as $key => $field)
+            @foreach ($resource->formFields() as $key => $field)
                 @php
-                    $value = old($key, $row?->getAttribute($key));
+                    $value = old($key, $row ? $row->getAttribute($key) : $resource->defaultValue($key));
                     $maxRule = collect($field['rules'])->first(fn ($r) => is_string($r) && str_starts_with($r, 'max:'));
                     $max = $maxRule ? (int) substr($maxRule, 4) : null;
                 @endphp
@@ -32,17 +32,27 @@
                     @if ($field['type'] === 'select')
                         <select id="f-{{ $key }}" name="{{ $key }}" class="form-control select2" style="width:100%">
                             <option value="">— Select {{ strtolower($field['label']) }} —</option>
-                            @foreach ($resource->options($key) as $optValue => $optLabel)
+                            @php $opts = $resource->options($key); @endphp
+                            @if ($row && filled($value) && ! array_key_exists($value, $opts))
+                                {{-- pilihan lama yang sudah dihapus/non-aktif tetap tampil supaya data tidak hilang --}}
+                                <option value="{{ $value }}" selected>{{ $resource->display($row, $key) ?: '#'.$value }} (inactive)</option>
+                            @endif
+                            @foreach ($opts as $optValue => $optLabel)
                                 <option value="{{ $optValue }}" @selected((string) $optValue === (string) $value)>{{ $optLabel }}</option>
                             @endforeach
                         </select>
                     @elseif ($field['type'] === 'textarea')
-                        <textarea id="f-{{ $key }}" name="{{ $key }}" class="form-control" rows="4"
-                                  placeholder="{{ $field['placeholder'] }}">{{ $value }}</textarea>
+                        <textarea id="f-{{ $key }}" name="{{ $key }}" class="form-control" rows="3"
+                                  placeholder="{{ $field['placeholder'] }}" @if ($loop->first) autofocus @endif
+                                  @if ($max) maxlength="{{ $max }}" @endif>{{ $value }}</textarea>
                     @else
                         <input type="text" id="f-{{ $key }}" name="{{ $key }}" value="{{ $value }}" class="form-control input-lg"
                                placeholder="{{ $field['placeholder'] }}" @if ($loop->first) autofocus @endif
                                @if ($max) maxlength="{{ $max }}" @endif>
+                    @endif
+
+                    @if (! empty($field['help']))
+                        <p class="rp-help"><i class="bi bi-info-circle"></i> {{ $field['help'] }}</p>
                     @endif
 
                     @error($key)
