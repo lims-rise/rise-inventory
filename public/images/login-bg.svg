@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1a33"/>
+      <stop offset=".55" stop-color="#123a6e"/>
+      <stop offset="1" stop-color="#1f6feb"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".78" cy=".3" r=".55">
+      <stop offset="0" stop-color="#8fc1ff" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#8fc1ff" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#ffffff" stroke-opacity=".06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <rect width="1600" height="1000" fill="url(#grid)"/>
+  <rect width="1600" height="1000" fill="url(#glow)"/>
+  <!-- Ilustrasi kotak/aset isometrik -->
+  <g fill="none" stroke="#ffffff" stroke-opacity=".16" stroke-width="2">
+    <path d="M1180 520l120-70 120 70-120 70z"/><path d="M1180 520v140l120 70V590"/><path d="M1420 520v140l-120 70"/>
+    <path d="M1340 320l80-46 80 46-80 46z"/><path d="M1340 320v92l80 46v-92"/><path d="M1500 320v92l-80 46"/>
+    <path d="M1020 700l80-46 80 46-80 46z"/><path d="M1020 700v92l80 46v-92"/><path d="M1180 700v92l-80 46"/>
+  </g>
+  <g fill="#8fc1ff" fill-opacity=".35">
+    <circle cx="1300" cy="450" r="4"/><circle cx="1420" cy="274" r="4"/><circle cx="1100" cy="654" r="4"/>
+  </g>
+</svg>
