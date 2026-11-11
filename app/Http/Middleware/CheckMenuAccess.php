@@ -21,7 +21,7 @@ class CheckMenuAccess
         $module = strtolower((string) $request->segment(1));
 
         if (! $user || ! in_array($module, $this->menus->allowedModules((int) $user->id_user_level), true)) {
-            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+            abort(403, 'Your level does not have access to this page. Ask an administrator if you need it.');
         }
 
         return $next($request);

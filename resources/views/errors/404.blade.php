@@ -1,0 +1,1 @@
+@include('errors._page', ['code' => 404, 'heading' => 'Page not found', 'text' => 'The page you are looking for does not exist, or the link is out of date.', 'icon' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8.5 11h5"/></svg>'])
