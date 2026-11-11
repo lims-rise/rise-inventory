@@ -157,7 +157,7 @@
                 <div class="rd-glass">
                     <small>Active staff</small>
                     <strong data-count="{{ $staffCount }}">0</strong>
-                    <span>holding assets</span>
+                    <span>registered here</span>
                 </div>
             </div>
         </div>
@@ -243,7 +243,7 @@
                 <div class="rd-card-head">
                     <div>
                         <h3>Latest activity</h3>
-                        <p>Staff with the most recent asset movements</p>
+                        <p>Staff currently responsible for assets, most recent first</p>
                     </div>
                     <a href="{{ url('staff') }}" class="btn btn-default btn-sm">All staff <i class="bi bi-arrow-right"></i></a>
                 </div>
@@ -260,7 +260,7 @@
                                     </div>
                                     <b title="{{ $row->name }}">{{ $row->name }}</b>
                                     <small>{{ $row->department_name ?: 'No department' }}</small>
-                                    <em>{{ $row->total }} {{ \Illuminate\Support\Str::plural('move', $row->total) }}
+                                    <em>{{ $row->total }} {{ \Illuminate\Support\Str::plural('item', $row->total) }}
                                         @if ($row->last_at) &middot; {{ \Illuminate\Support\Carbon::parse($row->last_at)->locale('en')->diffForHumans() }} @endif
                                     </em>
                                 </a>

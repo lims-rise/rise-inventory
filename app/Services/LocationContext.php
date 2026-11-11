@@ -10,16 +10,16 @@ use Illuminate\Support\Collection;
  * Lokasi (negara) aktif yang dipilih lewat dropdown di sidebar.
  * Disimpan di session 'location_id'. Nilai awal = tbl_user.location_id.
  *
- * Aturan sementara (sesuaikan bila CI3 berbeda):
- *  - Super Admin & Admin boleh memilih semua lokasi aktif.
- *  - Staff terkunci di lokasinya sendiri (tbl_user.location_id).
+ * Aturan sama dengan sidebar.php CI3:
+ *  - Hanya Super Admin yang boleh memilih semua lokasi aktif.
+ *  - Admin & Staff terkunci di lokasinya sendiri (tbl_user.location_id).
  */
 class LocationContext
 {
     public const SESSION_KEY = 'location_id';
 
     /** Level yang boleh berpindah lokasi (id dari tbl_user_level). */
-    public const CAN_SWITCH_LEVELS = [1, 2];
+    public const CAN_SWITCH_LEVELS = [1];
 
     public function canSwitch(?User $user): bool
     {

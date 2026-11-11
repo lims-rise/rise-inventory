@@ -170,8 +170,8 @@
     </div>
 
     <footer class="main-footer">
-        <div class="pull-right hidden-xs"><b>Version</b> 1.1.0</div>
-        <strong>Copyright &copy; 2023 RISE</strong>
+        <div class="pull-right hidden-xs"><b>Version</b> 2.1.5</div>
+        <strong>Copyright &copy; 2026 RISE Data Team</strong>
     </footer>
 
     <div class="control-sidebar-bg"></div>

@@ -26,15 +26,15 @@ class LoginController extends Controller
 
         $user = User::with('level')->where('email', $data['email'])->first();
 
-        if (! $user || ! $this->passwordMatches($data['password'], (string) $user->password)) {
+        if (! $user || ! $user->passwordMatches($data['password'])) {
             return back()
-                ->withErrors(['email' => 'Email atau password salah.'])
+                ->withErrors(['email' => 'Incorrect email or password.'])
                 ->onlyInput('email');
         }
 
         if (! $user->isActive()) {
             return back()
-                ->withErrors(['email' => 'Akun Anda tidak aktif. Hubungi administrator.'])
+                ->withErrors(['email' => 'Your account is inactive. Please contact your administrator.'])
                 ->onlyInput('email');
         }
 
@@ -54,32 +54,5 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
-    }
-
-    /**
-     * Cek password terhadap hash lama dari CI3 TANPA mengubah isi tbl_user.
-     * - bcrypt / argon (password_hash CI3)  -> password_verify()
-     * - md5 (32 hex) atau sha1 (40 hex)     -> dibandingkan langsung
-     * Hapus cabang md5/sha1 bila CI3 Anda memang memakai password_hash().
-     */
-    private function passwordMatches(string $plain, string $hash): bool
-    {
-        if ($hash === '') {
-            return false;
-        }
-
-        if (str_starts_with($hash, '$2y$') || str_starts_with($hash, '$2a$') || str_starts_with($hash, '$argon2')) {
-            return password_verify($plain, $hash);
-        }
-
-        if (preg_match('/^[a-f0-9]{32}$/i', $hash)) {
-            return hash_equals(strtolower($hash), md5($plain));
-        }
-
-        if (preg_match('/^[a-f0-9]{40}$/i', $hash)) {
-            return hash_equals(strtolower($hash), sha1($plain));
-        }
-
-        return false;
     }
 }

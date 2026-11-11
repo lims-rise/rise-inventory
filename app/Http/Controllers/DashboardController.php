@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Location;
 use App\Services\DashboardService;
 use App\Services\LocationContext;
+use App\Support\ConditionStyle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -12,14 +13,6 @@ use Illuminate\View\View;
 /** Pengganti controller CI3 Welcome::index (URL tetap /welcome). */
 class DashboardController extends Controller
 {
-    /** Warna tiap kondisi (id item_condition) untuk donut, badge, dan kartu. */
-    public const CONDITION_COLORS = [
-        DashboardService::CONDITION_GOOD => '#14b8a6',
-        DashboardService::CONDITION_REPAIR => '#f59e0b',
-        DashboardService::CONDITION_DECOMMISSIONED => '#ef4444',
-        DashboardService::CONDITION_BROKEN => '#fb7185',
-        DashboardService::CONDITION_LOST => '#94a3b8',
-    ];
 
     public function index(Request $request, LocationContext $locations): View
     {
@@ -58,13 +51,13 @@ class DashboardController extends Controller
                 ->map(fn ($row) => [
                     'name' => $row->name,
                     'y' => $row->val,
-                    'color' => self::CONDITION_COLORS[$row->id] ?? '#6366f1',
+                    'color' => ConditionStyle::color($row->id),
                 ])
                 ->values(),
 
             'staff' => $dashboard->staffActivity(10),
             'transactions' => $dashboard->recentTransactions(6)->map(function ($t) {
-                $t->color = self::CONDITION_COLORS[(int) $t->condition_id] ?? '#6366f1';
+                $t->color = ConditionStyle::color($t->condition_id);
                 $t->ago = $t->happened_at ? Carbon::parse($t->happened_at)->locale('en')->diffForHumans() : '-';
 
                 return $t;

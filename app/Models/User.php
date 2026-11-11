@@ -52,6 +52,39 @@ class User extends Authenticatable
     }
 
     /**
+     * Cek password. CI3 menyimpan password dengan password_hash() (bcrypt),
+     * sama dengan Hash::make() Laravel, jadi hash lama tetap berlaku.
+     */
+    public function passwordMatches(string $plain): bool
+    {
+        $hash = (string) $this->password;
+
+        return $hash !== '' && password_get_info($hash)['algo'] !== null && password_verify($plain, $hash);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return (int) $this->id_user_level === self::LEVEL_SUPER_ADMIN;
+    }
+
+    /** id tbl_user_level */
+    public const LEVEL_SUPER_ADMIN = 1;
+    public const LEVEL_ADMIN = 2;
+    public const LEVEL_STAFF = 3;
+
+    /** Tambah/ubah aset: Super Admin & Admin (sama dengan tombol di CI3). */
+    public function canEditInventory(): bool
+    {
+        return in_array((int) $this->id_user_level, [self::LEVEL_SUPER_ADMIN, self::LEVEL_ADMIN], true);
+    }
+
+    /** Hapus aset: hanya Super Admin (sama dengan tombol di CI3). */
+    public function canDeleteInventory(): bool
+    {
+        return (int) $this->id_user_level === self::LEVEL_SUPER_ADMIN;
+    }
+
+    /**
      * Halaman tujuan setelah login, diambil dari kolom tbl_user_level.url seperti di CI3.
      * Bila URL itu bukan menu yang boleh diakses level ini, jatuh ke /welcome (hindari 403 setelah login).
      */
